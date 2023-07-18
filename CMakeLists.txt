@@ -8,7 +8,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 file(GLOB CPP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/test/*.cpp")
 
-set(NOT_COMPILE "VarTypeDict" "TypeList" "any")
+set(NOT_COMPILE "VarTypeDict")
 
 foreach(file ${CPP_FILES})
     get_filename_component(filename ${file} NAME_WE)
