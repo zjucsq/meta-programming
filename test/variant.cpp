@@ -1,4 +1,4 @@
-#include <variant>
+#include <variant.h>
 
 int main() {
   variant<int, double, std::string> v1 = 42;
