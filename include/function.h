@@ -179,115 +179,113 @@ private:
   ICallable *callable_;
 };
 
-// Aother implementation
-// template <typename F> class function_d;
+Aother implementation template <typename F> class function_d;
 
-// template <typename Ret, typename... Args> class function_d<Ret(Args...)> {
-// private:
-//   union policy_storage {
-//     mutable char small[sizeof(void *) * 2];
-//     void *large;
-//   };
+template <typename Ret, typename... Args> class function_d<Ret(Args...)> {
+private:
+  union policy_storage {
+    mutable char small[sizeof(void *) * 2];
+    void *large;
+  };
 
-//   template <typename F>
-//   struct use_small_storage
-//       : public std::integral_constant<
-//             bool, sizeof(F) <= sizeof(policy_storage) &&
-//                       alignof(F) <= alignof(policy_storage) &&
-//                       std::is_trivially_copy_constructible_v<F> &&
-//                       std::is_trivially_destructible_v<F>> {};
+  template <typename F>
+  struct use_small_storage
+      : public std::integral_constant<
+            bool, sizeof(F) <= sizeof(policy_storage) &&
+                      alignof(F) <= alignof(policy_storage) &&
+                      std::is_trivially_copy_constructible_v<F> &&
+                      std::is_trivially_destructible_v<F>> {};
 
-//   template <typename _Tp>
-//   using fast_forward =
-//       typename std::conditional<std::is_scalar<_Tp>::value, _Tp, _Tp
-//       &&>::type;
+  template <typename _Tp>
+  using fast_forward =
+      typename std::conditional<std::is_scalar<_Tp>::value, _Tp, _Tp &&>::type;
 
-//   template <typename F> struct policy_invoker;
+  template <typename F> struct policy_invoker;
 
-//   template <typename Ret_, typename... Args_>
-//   struct policy_invoker<Ret_(Args_...)> {
-//     using Call = Ret_ (*)(const policy_storage *, fast_forward<Args>...);
-//     Call call;
+  template <typename Ret_, typename... Args_>
+  struct policy_invoker<Ret_(Args_...)> {
+    using Call = Ret_ (*)(const policy_storage *, fast_forward<Args>...);
+    Call call;
 
-//     policy_invoker() : call(nullptr) {}
+    policy_invoker() : call(nullptr) {}
 
-//     template <typename F> static policy_invoker create() {
-//       return policy_invoker(&call_impl<F>);
-//     }
+    template <typename F> static policy_invoker create() {
+      return policy_invoker(&call_impl<F>);
+    }
 
-//   private:
-//     explicit policy_invoker(Call c) : call(c) {}
+  private:
+    explicit policy_invoker(Call c) : call(c) {}
 
-//     // static Ret call_empty(const policy_storage *buf, Args... args) {
-//     //   throw bad_function_call();
-//     // }
+    // static Ret call_empty(const policy_storage *buf, Args... args) {
+    //   throw bad_function_call();
+    // }
 
-//     template <typename F>
-//     static Ret call_impl(const policy_storage *buf, Args... args) {
-//       F *f = reinterpret_cast<F *>(use_small_storage<F>::value ? &buf->small
-//                                                                : buf->large);
-//       return f(fast_forward<Args>(args)...);
-//     }
-//   };
+    template <typename F>
+    static Ret call_impl(const policy_storage *buf, Args... args) {
+      F *f = reinterpret_cast<F *>(use_small_storage<F>::value ? &buf->small
+                                                               : buf->large);
+      return f(fast_forward<Args>(args)...);
+    }
+  };
 
-//   struct policy {
-//     using clone = void (*)();
-//     using destroy = void (*)();
+  struct policy {
+    using clone = void (*)();
+    using destroy = void (*)();
 
-//     template <typename F> policy &create() {}
+    template <typename F> policy &create() {}
 
-//   private:
-//     void clone_small()
-//   };
+  private:
+    void clone_small()
+  };
 
-//   policy_storage buf;
-//   using invoker = policy_invoker<Ret(Args)...>;
-//   invoker invoker_;
-//   const policy *policy_;
+  policy_storage buf;
+  using invoker = policy_invoker<Ret(Args)...>;
+  invoker invoker_;
+  const policy *policy_;
 
-// public:
-//   function_d()
-//       : invoke_f(nullptr), construct_f(nullptr), destory_f(nullptr),
-//         data_ptr(nullptr), data_size(0) {}
+public:
+  function_d()
+      : invoke_f(nullptr), construct_f(nullptr), destory_f(nullptr),
+        data_ptr(nullptr), data_size(0) {}
 
-//   template <typename F>
-//   function_d(F f)
-//       : invoke_f(reinterpret_cast<invoke_fn_t>(invoke_fn<F>)),
-//         construct_f(reinterpret_cast<construct_fn_t>(construct_fn<F>)),
-//         destory_f(reinterpret_cast<destory_fn_t>(destroy_fn<F>)),
-//         data_ptr(new char[sizeof(F)]), data_size(sizeof(F)) {
-//     construct_f(data_ptr.get(), reinterpret_cast<char *>(&f));
-//   }
+  template <typename F>
+  function_d(F f)
+      : invoke_f(reinterpret_cast<invoke_fn_t>(invoke_fn<F>)),
+        construct_f(reinterpret_cast<construct_fn_t>(construct_fn<F>)),
+        destory_f(reinterpret_cast<destory_fn_t>(destroy_fn<F>)),
+        data_ptr(new char[sizeof(F)]), data_size(sizeof(F)) {
+    construct_f(data_ptr.get(), reinterpret_cast<char *>(&f));
+  }
 
-//   function_d(const function_d &rhs)
-//       : invoke_f(rhs.invoke_f), construct_f(rhs.construct_f),
-//         destory_f(rhs.destory_f), data_size(rhs.data_size) {
-//     if (rhs.invoke_f) {
-//       data_ptr.reset(new char[data_size]);
-//       construct_f(data_ptr.get(), rhs.data_ptr.get());
-//     }
-//   }
+  function_d(const function_d &rhs)
+      : invoke_f(rhs.invoke_f), construct_f(rhs.construct_f),
+        destory_f(rhs.destory_f), data_size(rhs.data_size) {
+    if (rhs.invoke_f) {
+      data_ptr.reset(new char[data_size]);
+      construct_f(data_ptr.get(), rhs.data_ptr.get());
+    }
+  }
 
-//   function_d &operator=(const function_d &rhs) {
-//     if (this != &rhs) {
-//       invoke_f = rhs.invoke_f;
-//       construct_f = rhs.construct_f;
-//       destory_f = rhs.destory_f;
-//       data_size = rhs.data_size;
-//       if (rhs.invoke_f) {
-//         data_ptr.reset(new char[data_size]);
-//         construct_f(data_ptr.get(), rhs.data_ptr.get());
-//       }
-//     }
-//     return *this;
-//   }
+  function_d &operator=(const function_d &rhs) {
+    if (this != &rhs) {
+      invoke_f = rhs.invoke_f;
+      construct_f = rhs.construct_f;
+      destory_f = rhs.destory_f;
+      data_size = rhs.data_size;
+      if (rhs.invoke_f) {
+        data_ptr.reset(new char[data_size]);
+        construct_f(data_ptr.get(), rhs.data_ptr.get());
+      }
+    }
+    return *this;
+  }
 
-//   ~function_d() {
-//     if (data_ptr)
-//       destory_f(data_ptr.get());
-//   }
+  ~function_d() {
+    if (data_ptr)
+      destory_f(data_ptr.get());
+  }
 
-//   Ret operator()(Args &&...args) {
-//     return invoke_f(data_ptr.get(), std::forward<Args>(args)...);
-//   }
-// };
+  Ret operator()(Args &&...args) {
+    return invoke_f(data_ptr.get(), std::forward<Args>(args)...);
+  }
+};

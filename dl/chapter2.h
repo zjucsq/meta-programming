@@ -43,11 +43,37 @@ struct At_<TCont<TCurType, TTypes...>, 0> {
 // 2.2 optimization
 
 // pack expansion
-// template<typename TInCont, template<typename> typename F,
-//         template<typename ...> typename TOutCont>
-// struct Transform_;
+template <typename TInCont, template <typename> typename F,
+          template <typename...> typename TOutCont>
+struct Transform_;
 
-// template<typename >
-// Transform_<TInCont<TInputs...>, F, TOutCont>
+template <template <typename...> typename TInCont, typename... TInputs,
+          template <typename> typename F,
+          template <typename...> typename TOutCont>
+struct Transform_<TInCont<TInputs...>, F, TOutCont> {
+  using type = TOutCont<typename F<TInputs>::type...>;
+};
+
+template <typename TInCont, template <typename> typename F,
+          template <typename...> typename TOutCont>
+using Transform = typename Transform_<TInCont, F, TOutCont>::type;
+
+// fold expression
+
+// 2.4
+template <typename TK, typename TV> struct KVBinder {
+  using KeyType = TK;
+  using ValueType = TV;
+  static TV apply(TK *);
+};
+
+template <typename TCon, typename TDefault> struct map_;
+
+template <template <typename...> typename TCon, typename... TItem,
+          typename TDefault>
+struct map_<TCon<TItem...>, TDefault> : TItem... {
+  using TItem::apply...;
+  static TDefault apply(...);
+};
 
 #endif // META_CHAPTER2_H

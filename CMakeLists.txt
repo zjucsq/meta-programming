@@ -6,9 +6,9 @@ set(CMAKE_CXX_STANDARD 20)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-file(GLOB CPP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/test/*.cpp")
+file(GLOB CPP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/other/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/test/*.cpp")
 
-set(NOT_COMPILE "VarTypeDict")
+set(NOT_COMPILE "")
 
 foreach(file ${CPP_FILES})
     get_filename_component(filename ${file} NAME_WE)
