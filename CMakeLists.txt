@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-file(GLOB CPP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/other/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/test/*.cpp")
+file(GLOB CPP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/other/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/test/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/simple/*.cpp")
 
 set(NOT_COMPILE "")
 
